@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Metrics Board — acquisition dashboard</title>
+    <meta
+      name="description"
+      content="Ten thousand rows of acquisition data: virtualized table, filters that live in the URL, and charts linked to both."
+    />
+    <script>
+      // Applies the saved theme before the first paint, so the page never
+      // renders in one scheme and then flips to the other.
+      (function () {
+        try {
+          var saved = JSON.parse(localStorage.getItem('metrics-board.theme.v1') || '""');
+          var dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var theme = saved === 'light' || saved === 'dark' ? saved : dark ? 'dark' : 'light';
+          document.documentElement.classList.add(theme);
+          document.documentElement.style.colorScheme = theme;
+        } catch (error) {
+          document.documentElement.classList.add('light');
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
