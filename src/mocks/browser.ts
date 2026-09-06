@@ -15,7 +15,7 @@ export async function startMockApi(): Promise<void> {
     // and `${baseURI}mockServiceWorker.js` turns a shared link like
     // `/?segments=enterprise` into a worker URL that cannot register — which
     // breaks the API for exactly the links this dashboard exists to produce.
-    serviceWorker: { url: new URL('mockServiceWorker.js', document.baseURI).toString() },
+    serviceWorker: { url: new URL(`${import.meta.env.BASE_URL}mockServiceWorker.js`, location.origin).toString() },
   })
   await whenControlled()
 }

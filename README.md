@@ -1,5 +1,7 @@
 # Metrics Board
 
+**[Open Metrics Board](https://mrnednick.github.io/metrics-board/)**
+
 An acquisition dashboard over ten thousand rows: filter them, drill into a day
 from the chart, and send someone the link — the URL is the entire state of the
 screen.
@@ -121,7 +123,11 @@ CI runs lint → test → build on every push and pull request.
 npx vercel deploy --prod
 ```
 
-There is no public link yet — the repository is private. Lighthouse on the local
+The [public demo](https://mrnednick.github.io/metrics-board/) is deployed by GitHub
+Actions after lint, tests and build succeed. `GITHUB_PAGES=true` builds for the
+repository subpath; the default build still targets a domain root.
+
+Lighthouse on the local
 production build (desktop preset) reports **100 performance / 100 accessibility
 / 100 best practices**, CLS 0.
 

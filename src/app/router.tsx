@@ -47,6 +47,7 @@ export const routeTree = rootRoute.addChildren([dashboardRoute])
 export function createAppRouter(history?: RouterHistory) {
   return createRouter({
     routeTree,
+    basepath: import.meta.env.BASE_URL,
     parseSearch,
     stringifySearch,
     defaultPreload: 'intent',
