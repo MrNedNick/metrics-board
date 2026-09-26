@@ -152,9 +152,9 @@ The [public demo](https://mrnednick.github.io/metrics-board/) is deployed by Git
 Actions after lint, tests and build succeed. `GITHUB_PAGES=true` builds for the
 repository subpath; the default build still targets a domain root.
 
-Lighthouse on the local
-production build (desktop preset) reports **100 performance / 100 accessibility
-/ 100 best practices**, CLS 0.
+Lighthouse on the live demo reports **97 performance / 100 accessibility / 100
+best practices** on the desktop preset (LCP 0.8 s). On the mobile preset
+performance drops to 88 (LCP 3.2 s): the charts library ships in the one bundle.
 
 ## Known limits
 
