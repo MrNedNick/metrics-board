@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { selectMetrics } from './filters'
+import { selectMetrics, shiftDay } from './filters'
 import { generateRows } from './generate'
 import type { MetricRow } from './types'
 
@@ -67,5 +67,48 @@ describe('selectMetrics', () => {
     expect(result.rows).toHaveLength(0)
     expect(result.totals.conversion).toBe(0)
     expect(result.totals.revenue).toBe(0)
+  })
+})
+
+describe('comparison with the previous period', () => {
+  const last = rows.reduce((max, row) => (row.date > max ? row.date : max), rows[0].date)
+
+  it('compares a 30-day window with the 30 days before it, under the same filters', () => {
+    const from = shiftDay(last, -29)
+    const result = selectMetrics(rows, { from, segments: ['enterprise'] })
+    const before = rows.filter(
+      (row) =>
+        row.segment === 'enterprise' && row.date >= shiftDay(from, -30) && row.date < from,
+    )
+
+    expect(result.comparison?.label).toBe('vs the previous 30 days')
+    expect(result.comparison?.current.revenue).toBe(result.totals.revenue)
+    expect(result.comparison?.previous.revenue).toBe(sum(before, 'revenue'))
+  })
+
+  it('compares a drilled-into day with the day before', () => {
+    const day = shiftDay(last, -3)
+    const result = selectMetrics(rows, { day })
+    expect(result.comparison?.label).toBe('vs the day before')
+    expect(result.comparison?.previous.sessions).toBe(
+      sum(rows.filter((row) => row.date === shiftDay(day, -1)), 'sessions'),
+    )
+  })
+
+  it('splits the whole history in half when there is nothing before it', () => {
+    const result = selectMetrics(rows, {})
+    expect(result.comparison?.label).toBe('in the last 60 days vs the 60 before')
+    const { current, previous } = result.comparison!
+    expect(current.sessions + previous.sessions).toBe(result.totals.sessions)
+  })
+
+  it('has nothing to compare for the very first day', () => {
+    const first = rows.reduce((min, row) => (row.date < min ? row.date : min), rows[0].date)
+    expect(selectMetrics(rows, { day: first }).comparison).toBeNull()
+  })
+
+  it('moves days across a daylight-saving switch without losing one', () => {
+    expect(shiftDay('2026-10-25', 1)).toBe('2026-10-26')
+    expect(shiftDay('2026-03-29', -1)).toBe('2026-03-28')
   })
 })

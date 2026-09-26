@@ -1,12 +1,31 @@
 # Metrics Board
 
+**Where do Tidewell's signups and revenue come from?**
+
+Tidewell is a made-up company that sells booking and invoicing software to small
+studios and agencies. This board takes every visit to its website, every trial
+signup and every first payment from the last 120 days and answers three
+questions: which channels and customer segments pay more than their share of
+traffic, whether things are getting better or worse than the period before, and
+what happened on any given day.
+
 **[Open Metrics Board](https://mrnednick.github.io/metrics-board/)**
 
-An acquisition dashboard over ten thousand rows: filter them, drill into a day
-from the chart, and send someone the link — the URL is the entire state of the
-screen.
+![The dashboard: the question, three plain-language findings, totals with their change, and two charts](docs/dashboard.png)
 
-![The dashboard: filters, totals, two charts and the table](docs/dashboard.png)
+## What you see first
+
+- **Three findings in plain words**, recomputed for whatever the filters show:
+  *"Enterprise visitors bring 46% of revenue from 14% of visits"*, how
+  conversion moved against the previous period, and the best day with how far it
+  sits above the average.
+- **Every total says which way it is going** — the change against the same
+  length of time just before, or, for the whole history, the last 60 days
+  against the 60 before.
+- **A "?" next to every term** — session, signup, conversion, revenue, each
+  segment and each channel — explains it in one click.
+- **A four-step tour on the first visit**, which never comes back on its own and
+  never opens on a shared link; "How to use this" brings it back.
 
 ## What it does
 
@@ -26,7 +45,7 @@ screen.
 - **Saved views.** Name the filters and the column layout you keep coming back
   to, apply them in one click, rename or delete them (deleting asks first).
 
-![The same dashboard as a shared link, in the dark theme](docs/filtered-dark.png)
+![A shared link in the dark theme: enterprise only, last 30 days, compared with the 30 before](docs/filtered-dark.png)
 
 ## The stack, and why
 
@@ -90,7 +109,7 @@ npm run dev        # http://localhost:5173
 
 ```bash
 npm run lint
-npm test           # 23 tests
+npm test           # 42 tests
 npm run build
 ```
 
@@ -98,16 +117,22 @@ Node 20.19+ or 22.12+.
 
 ## Tests
 
-Twenty-three tests, all against the real code:
+Forty-two tests, all against the real code:
 
 - the dataset generator — deterministic for a seed, and inside the bounds the
   UI claims;
 - the selector — filtering, the day drill-down, and the invariant that the
   table, both charts and the totals always add up to the same number;
+- the period comparison — the same window just before, the day before a
+  drilled-into day, halves of the whole history, and a daylight-saving switch;
+- the plain-language findings, including an empty selection and filters that
+  leave only one segment or channel;
 - search-parameter validation — good values through, broken ones dropped and
   reported, lists parsed from comma-separated form;
 - the scenario through the UI with Testing Library and MSW: load, filter,
-  confirm the URL, save a view, reload, and get the view back.
+  confirm the URL, save a view, reload, and get the view back; the findings and
+  deltas on first load; the tour showing once, on demand, and never on a shared
+  link.
 
 Both regressions introduced on purpose while writing them (a drill-down that
 stopped filtering, and a dropped parameter that could be merged back in) were

@@ -47,6 +47,25 @@ export interface SegmentPoint {
   readonly revenue: number
 }
 
+export interface ChannelPoint {
+  readonly channel: Channel
+  readonly sessions: number
+  readonly signups: number
+  readonly revenue: number
+}
+
+/**
+ * The same filters over an earlier window of the same length, so every total
+ * can say whether it is going up or down.
+ */
+export interface Comparison {
+  /** Finishes the sentence "+12% …", e.g. "vs the previous 30 days". */
+  readonly label: string
+  /** Usually the totals on screen; the later half when there is no room before them. */
+  readonly current: Totals
+  readonly previous: Totals
+}
+
 /**
  * One response holds the table rows and both charts. They can never disagree
  * about a number, because they are three views of the same answer.
@@ -56,6 +75,9 @@ export interface MetricsResponse {
   readonly totals: Totals
   readonly byDay: readonly DayPoint[]
   readonly bySegment: readonly SegmentPoint[]
+  readonly byChannel: readonly ChannelPoint[]
+  /** Null when the data has nothing earlier to compare with. */
+  readonly comparison: Comparison | null
   /** Rows before the day drill-down, so the chart keeps its full shape. */
   readonly unfilteredDays: readonly DayPoint[]
 }

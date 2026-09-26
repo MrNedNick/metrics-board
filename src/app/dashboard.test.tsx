@@ -109,3 +109,40 @@ describe('the dashboard', () => {
     await waitFor(() => expect(rowsHeading()).toBe(filtered))
   })
 })
+
+describe('making sense of it', () => {
+  it('says in plain words what the numbers show, and how they moved', async () => {
+    localStorage.setItem('metrics-board.tour.v1', 'true')
+    renderApp('/')
+
+    const insights = await screen.findByRole('region', { name: 'What the numbers say' })
+    expect(within(insights).getByText(/Enterprise visitors bring 46% of revenue/)).toBeInTheDocument()
+    expect(
+      within(screen.getByRole('region', { name: 'Totals' })).getAllByText(/in the last 60 days vs the 60 before/),
+    ).toHaveLength(4)
+  })
+
+  it('shows the tour once on a first visit, and on demand after that', async () => {
+    const user = userEvent.setup()
+    const first = renderApp('/')
+
+    const dialog = await screen.findByRole('dialog', { name: 'How to use this board' })
+    for (const _ of [1, 2, 3]) await user.click(within(dialog).getByRole('button', { name: 'Next' }))
+    await user.click(within(dialog).getByRole('button', { name: 'Got it' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+
+    first.unmount()
+    renderApp('/')
+    await waitFor(() => expect(rowsHeading()).toContain('10,000 of 10,000'))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'How to use this' }))
+    expect(await screen.findByRole('dialog', { name: 'How to use this board' })).toBeInTheDocument()
+  })
+
+  it('does not stop a colleague who opened a link with filters', async () => {
+    renderApp('/?segments=enterprise')
+    await waitFor(() => expect(rowsHeading()).not.toContain('10,000 of 10,000'))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+})

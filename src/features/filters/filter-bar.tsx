@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Button } from '../../components/button/button'
+import { Definition } from '../../components/definition/definition'
 import { Input } from '../../components/input/input'
 import { CHANNELS, SEGMENTS } from '../../data/types'
 import type { Channel, Segment } from '../../data/types'
 import type { DashboardSearch } from '../../data/search'
 import { isFiltered } from '../../data/search'
 import { cn } from '../../lib/cn'
+import { DefinitionList } from '../insights/definition-list'
+import { CHANNEL_DEFINITIONS, SEGMENT_DEFINITIONS } from '../insights/definitions'
 import { useDebouncedValue } from '../../lib/use-debounced-value'
 import { formatDay, isoDaysAgo } from '../../lib/format'
 
@@ -100,6 +103,7 @@ export function FilterBar({ search, onChange, onReset }: FilterBarProps) {
 
       <FilterGroup
         label="Segment"
+        definitions={SEGMENT_DEFINITIONS}
         values={SEGMENTS}
         active={search.segments}
         onToggle={(value: Segment) => onChange({ segments: toggle(search.segments, value) })}
@@ -107,6 +111,7 @@ export function FilterBar({ search, onChange, onReset }: FilterBarProps) {
 
       <FilterGroup
         label="Channel"
+        definitions={CHANNEL_DEFINITIONS}
         values={CHANNELS}
         active={search.channels}
         onToggle={(value: Channel) => onChange({ channels: toggle(search.channels, value) })}
@@ -151,15 +156,28 @@ export function FilterBar({ search, onChange, onReset }: FilterBarProps) {
 
 interface FilterGroupProps<T extends string> {
   label: string
+  /** What each value means, behind a "?" next to the label. */
+  definitions: Record<T, string>
   values: readonly T[]
   active: readonly T[] | undefined
   onToggle: (value: T) => void
 }
 
-function FilterGroup<T extends string>({ label, values, active, onToggle }: FilterGroupProps<T>) {
+function FilterGroup<T extends string>({
+  label,
+  definitions,
+  values,
+  active,
+  onToggle,
+}: FilterGroupProps<T>) {
   return (
     <div className="flex flex-col gap-1.5">
-      <span className="text-xs font-medium text-text-muted">{label}</span>
+      <div className="flex items-center gap-1.5">
+        <span className="text-xs font-medium text-text-muted">{label}</span>
+        <Definition term={`a ${label.toLowerCase()}`}>
+          <DefinitionList items={definitions} />
+        </Definition>
+      </div>
       <div className="flex flex-wrap gap-1.5" role="group" aria-label={label}>
         {values.map((value) => {
           const on = active?.includes(value) ?? false
