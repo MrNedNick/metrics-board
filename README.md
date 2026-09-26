@@ -153,8 +153,9 @@ Actions after lint, tests and build succeed. `GITHUB_PAGES=true` builds for the
 repository subpath; the default build still targets a domain root.
 
 Lighthouse on the live demo reports **97 performance / 100 accessibility / 100
-best practices** on the desktop preset (LCP 0.8 s). On the mobile preset
-performance drops to 88 (LCP 3.2 s): the charts library ships in the one bundle.
+best practices** on the desktop preset (LCP 0.8 s) and 90–92 performance on the
+mobile preset (LCP 2.5 s). The charts library loads in its own chunk behind a
+placeholder of the same height, so the question, insights and KPIs paint first.
 
 ## Known limits
 
