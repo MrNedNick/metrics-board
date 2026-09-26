@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { cn } from '../../lib/cn'
 
 export interface ModalProps {
@@ -34,6 +34,16 @@ export function Modal({
   className,
 }: ModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null)
+  // Mounted stays true for one extra render after `open` goes false, so the
+  // effect below can call the native `close()` — which returns focus to the
+  // triggering element and lifts the dialog out of the top layer — instead of
+  // React ripping the still-open <dialog> out of the DOM directly.
+  const [mounted, setMounted] = useState(open)
+
+  // Adjust state during render rather than in an effect: React discards this
+  // render and immediately re-renders with `mounted` already true, so the
+  // dialog mounts in the same commit instead of flashing closed for a frame.
+  if (open && !mounted) setMounted(true)
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -48,9 +58,9 @@ export function Modal({
     return () => {
       document.body.style.overflow = overflow
     }
-  }, [open])
+  }, [open, mounted])
 
-  if (!open) return null
+  if (!mounted) return null
 
   return (
     <dialog
@@ -62,6 +72,9 @@ export function Modal({
         event.preventDefault()
         onClose()
       }}
+      // Fires once `close()` (above) actually finishes closing the native
+      // dialog — only then is it safe to unmount it.
+      onClose={() => setMounted(false)}
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose()
       }}
