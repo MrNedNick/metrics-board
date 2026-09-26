@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate, useRouterState, useSearch } from '@tanstack/react-router'
 import type { SortingState } from '@tanstack/react-table'
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 import { Button } from '../components/button/button'
 import { Definition } from '../components/definition/definition'
 import { EmptyState } from '../components/empty-state/empty-state'
@@ -16,8 +16,6 @@ import {
   subscribeToDropped,
 } from '../data/search'
 import type { Comparison, Segment, Totals } from '../data/types'
-import { DailyChart } from '../features/charts/daily-chart'
-import { SegmentChart } from '../features/charts/segment-chart'
 import { FilterBar } from '../features/filters/filter-bar'
 import { METRIC_DEFINITIONS } from '../features/insights/definitions'
 import { InsightStrip } from '../features/insights/insight-strip'
@@ -28,6 +26,17 @@ import type { TableSettings } from '../features/table/metrics-table'
 import { COLUMN_IDS } from '../features/table/columns'
 import { Tour, TOUR_KEY } from '../features/tour/tour'
 import { SavedViews } from '../features/views/saved-views'
+
+// Recharts is the heaviest dependency by far. Loading the charts on their own
+// lets the question, the insights and the KPIs paint before it arrives; the
+// placeholder has the charts' height, so nothing jumps when they do.
+const DailyChart = lazy(() =>
+  import('../features/charts/daily-chart').then((m) => ({ default: m.DailyChart })),
+)
+const SegmentChart = lazy(() =>
+  import('../features/charts/segment-chart').then((m) => ({ default: m.SegmentChart })),
+)
+const chartFallback = <Skeleton className="h-64" />
 import type { SavedView } from '../features/views/saved-views'
 import { formatDay, formatMoney, formatNumber, formatPercent } from '../lib/format'
 import { useLocalStorage } from '../lib/use-local-storage'
@@ -203,11 +212,13 @@ export function DashboardPage() {
               {showSkeletons ? (
                 <Skeleton className="h-64" />
               ) : (
-                <DailyChart
-                  data={data?.unfilteredDays ?? []}
-                  selectedDay={search.day}
-                  onSelectDay={(day) => patch({ day })}
-                />
+                <Suspense fallback={chartFallback}>
+                  <DailyChart
+                    data={data?.unfilteredDays ?? []}
+                    selectedDay={search.day}
+                    onSelectDay={(day) => patch({ day })}
+                  />
+                </Suspense>
               )}
             </Panel>
 
@@ -215,11 +226,13 @@ export function DashboardPage() {
               {showSkeletons ? (
                 <Skeleton className="h-64" />
               ) : (
-                <SegmentChart
-                  data={data?.bySegment ?? []}
-                  active={search.segments}
-                  onToggleSegment={toggleSegment}
-                />
+                <Suspense fallback={chartFallback}>
+                  <SegmentChart
+                    data={data?.bySegment ?? []}
+                    active={search.segments}
+                    onToggleSegment={toggleSegment}
+                  />
+                </Suspense>
               )}
             </Panel>
           </section>
